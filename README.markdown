@@ -13,7 +13,8 @@ Use this project to create a Halite bot written in Clojure.
 
 ### Get an account
 
-To submit your bots, you need a Halite account. If you don't already have one, [create one](https://halite.io/).
+To submit your bots, you need a Halite account. If you don't already have one,
+[create one](https://halite.io/).
 
 ### Install your API key
 
@@ -28,7 +29,8 @@ environment variables.
 > source config.env
 ```
 
-Then, install the API key using the `hlt` client tool. You'll be prompted to enter the API key you generated:
+Then, install the API key using the `hlt` client tool. You'll be prompted to
+enter the API key you generated:
 
 
 ```bash
