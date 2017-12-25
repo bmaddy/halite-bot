@@ -1,23 +1,20 @@
 (ns MyBot
   (:require
-   [clojure.java.io :as clj.io]
+   [clojure.java.io]
    [hlt.bot :as bot]
    [hlt.log :as log]
-   [hlt.my-bot :as bot-impl]
-   [hlt.networking :as io])
+   [hlt.my-bot :as my-bot]
+   [hlt.io :as io])
   (:import
    (java.io PrintWriter))
   (:gen-class))
-
-;; Here we set the bot name to Doohickey.
-(def my-bot-name "Doohickey")
 
 (defn -main
   [& args]
   (let [io          {:in *in* :out *out*}
         prelude     (io/read-prelude io)
         initial-map (io/read-map io)
-        bot         (bot-impl/bot my-bot-name prelude initial-map)
+        bot         (my-bot/bot "Doohickey" prelude initial-map)
         bot-name    (bot/name bot)]
     (log/init {:bot-name     bot-name
                :player-id    (:player-id prelude)
