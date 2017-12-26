@@ -1,10 +1,10 @@
 (ns system
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            ;; [clojure.tools.logging :as log]
-            ;; [hlt.log :as log]
             [taoensso.timbre :as timbre :refer [info]]
-            [taoensso.timbre.appenders.core :as appenders])
+            [taoensso.timbre.appenders.core :as appenders]
+            [hlt.entity :as e]
+            clojure.pprint)
   (:gen-class))
 
 ;; ;; Turn on file logging
@@ -15,41 +15,85 @@
  {:appenders {:spit (appenders/spit-appender {:fname "out.log"})
               :println {:enabled? false}}})
 
+(def basic-bot
+  {:name "Basic"})
+
+(defn get-line
+  []
+  (edn/read-string (str \[ (read-line) \])))
+
+(def docking-status-id->docking-status
+  [:undocked :docking :docked :undocking])
+
+(defn get-ship
+  [owner-id
+   [id
+    x y
+    health
+    _ ;; x-velocity is deprecated
+    _ ;; y-velocity is deprecated
+    docking-status-id
+    docked-planet-id
+    docking-progress
+    weapon-cooldown
+    & remaining]]
+  (let [ship {:id id
+              :owner-id owner-id
+              :position [x y]
+              :radius e/ship-radius
+              :health health
+              :docking-status (docking-status-id->docking-status docking-status-id)
+              :docked-planet-id docked-planet-id
+              :weapon-cooldown weapon-cooldown}]
+    [ship remaining]))
+
+(defn get-player
+  [[player-id ship-count & data]]
+  (loop [ship-num 0
+         data data
+         player {:id player-id
+                 :ships []}]
+    (info {:ship-num ship-num
+           :data data})
+    (if (= ship-num ship-count)
+      [player data]
+      (let [[ship remaining] (get-ship player-id data)]
+        (info {:ship ship})
+        (recur (inc ship-num)
+               remaining
+               (update player :ships conj ship))))))
+
+(defn build-game-map
+  [[player-count & data :as tokens]]
+  (info {:player-count player-count})
+  (loop [player-num 0
+         data data
+         game-map {:ships-by-player-id {}}]
+    (info {:player-num player-num
+           :data data})
+    (if (= player-num player-count)
+      game-map
+      (let [[player remaining] (get-player data)]
+        (info {:player player})
+        (recur (inc player-num)
+               remaining
+               (update game-map :ships-by-player-id assoc (:id player) (:ships player)))))))
+
 (defn start
   [bot]
+  (let [[tag] (get-line)
+        _ (info {:tag tag})
+        map-size (get-line)
+        _ (info {:map-size map-size})
+        state (assoc (build-game-map (get-line))
+                     :tag tag
+                     :map-size map-size)]
+    (info state))
   (info {:bot-name :FIXME
          :player-id :player-id
          :started-at (java.util.Date.)
          :base-dirname "log"})
-  (info :starting)
-  (info (read *in*))
-  (info :done-1)
-  (info (read *in*))
-  (info :done-2)
-  (info (read *in*))
-  (info :done-3)
-  (info (read *in*))
-  (info :done-4)
-  (info (read *in*))
-  (info :done-5)
-  (info (read *in*))
-  (info :done-6)
-  (info (read *in*))
-  (info :done-7)
-  (info (read *in*))
-  (info :done-8)
-  (info (read *in*))
-  (info :done-9)
-  (info (read *in*))
-  (info :done-10)
-  (info (read *in*))
-  (info :done-11)
-  (info (read *in*))
-  (info :done-12)
-  (info (read *in*))
-  (info :done-13)
-  (info (read *in*))
-  (info :done-14)
+  (info "Initial state loaded.")
   #_(let [io {:in *in* :out *out*}
         prelude (io/read-prelude io)
         initial-map (io/read-map io)
