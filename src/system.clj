@@ -63,21 +63,69 @@
                remaining
                (update player :ships conj ship))))))
 
+(defn get-planet
+  [[id
+    x y
+    health
+    radius
+    docking-spot-count
+    current-production
+    _ ;; remaining-production is deprecated
+    has-owner
+    owner-candidate
+    docked-ship-count
+    & data]]
+  (let [[docked-ship-ids remaining] (split-at docked-ship-count data)
+        planet {:id id
+                :position [x y]
+                :radius radius
+                :docking-spot-count docking-spot-count
+                :health health
+                :owner-id (condp = has-owner
+                            0 nil
+                            1 owner-candidate)
+                :docked-ship-ids docked-ship-ids}]
+    [planet remaining]))
+
+#_(defn get-entities
+  [[entity-count & data]]
+  (loop [entity-num 0
+         data data
+         entity ]))
+
 (defn build-game-map
   [[player-count & data :as tokens]]
   (info {:player-count player-count})
-  (loop [player-num 0
-         data data
-         game-map {:ships-by-player-id {}}]
-    (info {:player-num player-num
-           :data data})
-    (if (= player-num player-count)
-      game-map
-      (let [[player remaining] (get-player data)]
-        (info {:player player})
-        (recur (inc player-num)
-               remaining
-               (update game-map :ships-by-player-id assoc (:id player) (:ships player)))))))
+  (let [[game-map-with-players [planet-count & remaining]]
+        (loop [player-num 0
+               data data
+               game-map {:ships-by-player-id {}
+                         :planets-by-id {}}]
+          (info {:player-num player-num
+                 :data data})
+          (if (= player-num player-count)
+            [game-map data]
+            (let [[player remaining] (get-player data)]
+              (info {:player player})
+              (recur (inc player-num)
+                     remaining
+                     (update game-map :ships-by-player-id assoc (:id player) (:ships player))))))
+
+        _ (info {:planet-count planet-count})
+        [game-map _]
+        (loop [planet-num 0
+               data remaining
+               game-map game-map-with-players]
+          (info {:planet-num planet-num
+                 :data data})
+          (if (= planet-num planet-count)
+            [game-map data]
+            (let [[planet remaining] (get-planet data)]
+              (info {:planet planet})
+              (recur (inc planet-num)
+                     remaining
+                     (update game-map :planets-by-id assoc (:id planet) planet)))))]
+    game-map))
 
 (defn start
   [bot]
