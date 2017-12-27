@@ -89,43 +89,34 @@
                 :docked-ship-ids docked-ship-ids}]
     [planet remaining]))
 
-#_(defn get-entities
-  [[entity-count & data]]
+(defn get-entities
+  [container add-entity get-entity [entity-count & data]]
   (loop [entity-num 0
          data data
-         entity ]))
+         entities container]
+    (if (= entity-num entity-count)
+      [entities data]
+      (let [[entity remaining] (get-entity data)]
+        (info [:add-entity entities entity])
+        (recur (inc entity-num)
+               remaining
+               (add-entity entities entity))))))
 
 (defn build-game-map
-  [[player-count & data :as tokens]]
-  (info {:player-count player-count})
-  (let [[ships [planet-count & remaining]]
-        (loop [player-num 0
-               data data
-               ships {}]
-          (info {:player-num player-num
-                 :data data})
-          (if (= player-num player-count)
-            [ships data]
-            (let [[player remaining] (get-player data)]
-              (info {:player player})
-              (recur (inc player-num)
-                     remaining
-                     (assoc ships (:id player) (:ships player))))))
+  [data]
+  (let [[ships remaining]
+        (get-entities {}
+                      (fn [ships player]
+                        (assoc ships (:id player) (:ships player)))
+                      get-player
+                      data)
 
-        _ (info {:planet-count planet-count})
         [planets _]
-        (loop [planet-num 0
-               data remaining
-               planets {}]
-          (info {:planet-num planet-num
-                 :data data})
-          (if (= planet-num planet-count)
-            [planets data]
-            (let [[planet remaining] (get-planet data)]
-              (info {:planet planet})
-              (recur (inc planet-num)
-                     remaining
-                     (assoc planets (:id planet) planet)))))]
+        (get-entities {}
+                      (fn [planets planet]
+                        (assoc planets (:id planet) planet))
+                      get-planet
+                      remaining)]
     {:ships-by-player-id ships
      :planets-by-id planets}))
 
