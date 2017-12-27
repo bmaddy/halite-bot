@@ -7,10 +7,7 @@
             clojure.pprint)
   (:gen-class))
 
-;; ;; Turn on file logging
-;; (log/set-config! [:appenders :spit :enabled?] true)
-;; ;; Set the log file location
-;; (log/set-config! [:shared-appender-config :spit-filename] "out.log")
+;; Turn on file logging
 (timbre/merge-config!
  {:appenders {:spit (appenders/spit-appender {:fname "out.log"})
               :println {:enabled? false}}})
@@ -24,6 +21,18 @@
 
 (def docking-status-id->docking-status
   [:undocked :docking :docked :undocking])
+
+(defn get-entities
+  [get-entity [entity-count & data]]
+  (loop [entity-num 0
+         data data
+         entities []]
+    (if (= entity-num entity-count)
+      [entities data]
+      (let [[entity remaining] (get-entity data)]
+        (recur (inc entity-num)
+               remaining
+               (conj entities entity))))))
 
 (defn get-ship
   [owner-id
@@ -48,21 +57,8 @@
     [ship remaining]))
 
 (defn get-player
-  [[player-id ship-count & data]]
-  (let [ship-builder #(get-ship player-id %)
-        [ships remaining]
-        (loop [ship-num 0
-               data data
-               ships []]
-          (info {:ship-num ship-num
-                 :data data})
-          (if (= ship-num ship-count)
-            [ships data]
-            (let [[ship remaining] (ship-builder data)]
-              (info {:ship ship})
-              (recur (inc ship-num)
-                     remaining
-                     (conj ships ship)))))]
+  [[player-id & data]]
+  (let [[ships remaining] (get-entities #(get-ship player-id %) data)]
     [{:id player-id :ships ships} remaining]))
 
 (defn get-planet
@@ -88,18 +84,6 @@
                             1 owner-candidate)
                 :docked-ship-ids docked-ship-ids}]
     [planet remaining]))
-
-(defn get-entities
-  [get-entity [entity-count & data]]
-  (loop [entity-num 0
-         data data
-         entities []]
-    (if (= entity-num entity-count)
-      [entities data]
-      (let [[entity remaining] (get-entity data)]
-        (recur (inc entity-num)
-               remaining
-               (conj entities entity))))))
 
 (defn build-game-map
   [data]

@@ -10,3 +10,4 @@ classes
 log
 .nrepl-port
 halite
+.lein-repl-history
