@@ -90,35 +90,31 @@
     [planet remaining]))
 
 (defn get-entities
-  [container add-entity get-entity [entity-count & data]]
+  [get-entity [entity-count & data]]
   (loop [entity-num 0
          data data
-         entities container]
+         entities []]
     (if (= entity-num entity-count)
       [entities data]
       (let [[entity remaining] (get-entity data)]
-        (info [:add-entity entities entity])
         (recur (inc entity-num)
                remaining
-               (add-entity entities entity))))))
+               (conj entities entity))))))
 
 (defn build-game-map
   [data]
-  (let [[ships remaining]
-        (get-entities {}
-                      (fn [ships player]
-                        (assoc ships (:id player) (:ships player)))
-                      get-player
-                      data)
-
-        [planets _]
-        (get-entities {}
-                      (fn [planets planet]
-                        (assoc planets (:id planet) planet))
-                      get-planet
-                      remaining)]
-    {:ships-by-player-id ships
-     :planets-by-id planets}))
+  (let [[ships remaining] (get-entities get-player data)
+        [planets _] (get-entities get-planet remaining)
+        ships-by-player-id (reduce (fn [acc {:keys [id ships]}]
+                                     (assoc acc id ships))
+                                   {}
+                                   ships)
+        planets-by-id (reduce (fn [acc {:keys [id] :as planet}]
+                                (assoc acc id planet))
+                              {}
+                              planets)]
+    {:ships-by-player-id ships-by-player-id
+     :planets-by-id planets-by-id}))
 
 (defn start
   [bot]
