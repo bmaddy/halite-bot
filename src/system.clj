@@ -13,10 +13,10 @@
  {:appenders {:spit (appenders/spit-appender {:fname "out.log"})
               :println {:enabled? false}}})
 
-(deftype BasicBot []
-  bot/IBot
-  (get-name [this {:keys [tag] :as state}] (str "basic-bot-" tag))
-  (next-moves [this state] []))
+(def bot
+  (reify bot/IBot
+    (get-name [this {:keys [tag] :as state}] (str "reify-bot-" tag))
+    (next-moves [this state] [])))
 
 (defn get-line
   []
@@ -24,8 +24,7 @@
 
 (defn start
   [bot]
-  (let [bot (BasicBot.)
-        [tag] (get-line)
+  (let [[tag] (get-line)
         map-size (get-line)
         state (assoc (parser/build-game-map (get-line))
                      :tag tag
@@ -61,4 +60,4 @@
 
 (defn -main
   [& args]
-  (start {}))
+  (start bot))
