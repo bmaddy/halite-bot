@@ -4,7 +4,8 @@
             [taoensso.timbre :as timbre :refer [info]]
             [taoensso.timbre.appenders.core :as appenders]
             [hlt.parser :as parser]
-            clojure.pprint)
+            clojure.pprint
+            [hlt.bot :as bot])
   (:gen-class))
 
 ;; Turn on file logging
@@ -12,8 +13,10 @@
  {:appenders {:spit (appenders/spit-appender {:fname "out.log"})
               :println {:enabled? false}}})
 
-(def basic-bot
-  {:name "Basic"})
+(deftype BasicBot []
+  bot/IBot
+  (get-name [this {:keys [tag] :as state}] (str "basic-bot-" tag))
+  (next-moves [this state] []))
 
 (defn get-line
   []
@@ -21,17 +24,20 @@
 
 (defn start
   [bot]
-  (let [[tag] (get-line)
+  (let [bot (BasicBot.)
+        [tag] (get-line)
         map-size (get-line)
         state (assoc (parser/build-game-map (get-line))
                      :tag tag
                      :map-size map-size)]
-    (info state))
+    (info state)
+    (info "Initial state loaded.")
+    (println (bot/get-name bot state)))
+
   (info {:bot-name :FIXME
          :player-id :player-id
          :started-at (java.util.Date.)
          :base-dirname "log"})
-  (info "Initial state loaded.")
   #_(let [io {:in *in* :out *out*}
         prelude (io/read-prelude io)
         initial-map (io/read-map io)

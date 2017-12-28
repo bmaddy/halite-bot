@@ -16,10 +16,10 @@
          (navigation/navigate-to-dock ship planet game-map))))))
 
 (defrecord MyBot [bot-name player-id map-dims initial-map]
-  bot/Bot
-  (-name [this]
+  bot/IBot
+  (get-name [this _]
     (str bot-name "-" player-id))
-  (-next-moves [this game-map]
+  (next-moves [this game-map]
     (let [ships (vals (get-in game-map [:owner-ships player-id]))
           planets (:planets game-map)]
       (keep #(compute-move % planets game-map) ships))))

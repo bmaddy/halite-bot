@@ -15,7 +15,7 @@
         prelude     (io/read-prelude io)
         initial-map (io/read-map io)
         bot         (my-bot/bot "Doohickey" prelude initial-map)
-        bot-name    (bot/name bot)]
+        bot-name    (bot/get-name bot nil)]
     (log/init {:bot-name     bot-name
                :player-id    (:player-id prelude)
                :started-at   (java.util.Date.)
