@@ -15,7 +15,7 @@
 
 (def bot
   (reify bot/IBot
-    (get-name [this {:keys [tag] :as state}] (str "reify-bot-" tag))
+    (get-name [this {:keys [tag] :as state}] (str "basic-bot-" tag))
     (next-moves [this state] [])))
 
 (defn get-line
@@ -31,33 +31,31 @@
                      :map-size map-size)]
     (info state)
     (info "Initial state loaded.")
-    (println (bot/get-name bot state)))
-
-  (info {:bot-name :FIXME
-         :player-id :player-id
-         :started-at (java.util.Date.)
-         :base-dirname "log"})
-  #_(let [io {:in *in* :out *out*}
-        prelude (io/read-prelude io)
-        initial-map (io/read-map io)
-        state (merge prelude initial-map)]
-    (log/init {:bot-name :FIXME
-               :player-id (:player-id prelude)
-               :started-at (java.util.Date.)
-               :base-dirname "log"})
-    (io/send-done-initialized io (bot/name state))
-    (loop [turn 0]
-      (log/log :turn turn)
-      (try
-        (let [state (merge state (io/read-map io))
-              moves (bot/next-moves state)]
-          (io/send-moves io moves))
-        (catch Throwable t
-          (with-open [pw (PrintWriter. *out*)]
-            (.printStackTrace t pw))
-          (throw t)))
-      (recur (inc turn)))))
+    (info {:bot-name (bot/get-name bot state)
+           :player-id tag
+           :started-at (java.util.Date.)
+           :base-dirname "log"})
+    (println (bot/get-name bot state))
+    )
+  #_(log/init {:bot-name :FIXME
+             :player-id (:player-id prelude)
+             :started-at (java.util.Date.)
+             :base-dirname "log"})
+  (/ 0)
+  #_(io/send-done-initialized io (bot/name state))
+  #_(loop [turn 0]
+    (log/log :turn turn)
+    (try
+      (let [state (merge state (io/read-map io))
+            moves (bot/next-moves state)]
+        (io/send-moves io moves))
+      (catch Throwable t
+        (with-open [pw (PrintWriter. *out*)]
+          (.printStackTrace t pw))
+        (throw t)))
+    (recur (inc turn))))
 
 (defn -main
   [& args]
-  (start bot))
+  (timbre/log-errors
+    (start bot)))
