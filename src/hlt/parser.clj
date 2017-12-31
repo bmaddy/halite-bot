@@ -1,5 +1,6 @@
 (ns hlt.parser
-  (:require [hlt.entity :as e]))
+  (:require [hlt.entity :as e]
+            [hlt.math :as math]))
 
 (def docking-status-id->docking-status
   [:undocked :docking :docked :undocking])
@@ -28,14 +29,10 @@
     docking-progress
     weapon-cooldown
     & remaining]]
-  (let [ship {:id id
-              :owner-id owner-id
-              :position [x y]
-              :radius e/ship-radius
-              :health health
-              :docking-status (docking-status-id->docking-status docking-status-id)
-              :docked-planet-id docked-planet-id
-              :weapon-cooldown weapon-cooldown}]
+  (let [ship (e/->Ship id (math/->Position x y) health e/ship-radius owner-id
+                       {:status (docking-status-id->docking-status docking-status-id)
+                        :planet-id docked-planet-id
+                        :progress docking-progress})]
     [ship remaining]))
 
 (defn get-player
@@ -56,15 +53,12 @@
     docked-ship-count
     & data]]
   (let [[docked-ship-ids remaining] (split-at docked-ship-count data)
-        planet {:id id
-                :position [x y]
-                :radius radius
-                :docking-spot-count docking-spot-count
-                :health health
-                :owner-id (condp = has-owner
-                            0 nil
-                            1 owner-candidate)
-                :docked-ship-ids docked-ship-ids}]
+        planet (e/->Planet id (math/->Position x y) health radius
+                           (case has-owner
+                             0 nil
+                             1 owner-candidate)
+                           {:spots docking-spot-count
+                            :ship-ids docked-ship-ids})]
     [planet remaining]))
 
 (defn build-game-map
