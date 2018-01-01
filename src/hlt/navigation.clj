@@ -15,11 +15,11 @@
 (defn entities-between
   "Returns all the entities that intersects the line segment from a to b."
   [a b game-map]
-  (let [{:keys [planets ships]} game-map
+  (let [{:keys [planets-by-id ships-by-owner-id]} game-map
         filter-fn #(and (distinct? a b %)
                         (math/segment-circle-intersects? a b % default-fudge-factor))]
-    (concat (filter filter-fn (vals planets))
-            (filter filter-fn (vals ships)))))
+    (concat (filter filter-fn (vals planets-by-id))
+            (filter filter-fn (vals ships-by-owner-id)))))
 
 (def ^:private default-navigation-opts
   {:max-corrections max-navigation-corrections
@@ -70,8 +70,8 @@
   "Returns a list of all entities sorted by distance to x. If x itself
   is an entity, it is not included in the list."
   [x game-map]
-  (let [{:keys [planets ships]} game-map]
-    (->> (concat planets ships)
+  (let [{:keys [planets-by-id ships-by-owner-id]} game-map]
+    (->> (concat planets-by-id ships-by-owner-id)
          (map vals)
          (remove #{x})
          (sort-by #(math/distance-between x %)))))
