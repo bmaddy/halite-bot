@@ -1,13 +1,10 @@
 (ns system
-  (:require [taoensso.timbre :as timbre :refer [info]]
-            [taoensso.timbre.appenders.core :as appenders]
-            [hlt.parser :as parser]
-            [hlt.bot :as bot]
-            [hlt.entity :as e]
+  (:gen-class)
+  (:require [hlt.bot :as bot]
             [hlt.io :as io]
-            [hlt.navigation :as nav]
-            [my-bot :as my-bot])
-  (:gen-class))
+            [my-bot :as my-bot]
+            [taoensso.timbre :as timbre :refer [info]]
+            [taoensso.timbre.appenders.core :as appenders]))
 
 ;; Turn on file logging
 (timbre/merge-config!

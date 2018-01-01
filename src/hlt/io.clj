@@ -1,130 +1,8 @@
 (ns hlt.io
-  (:require
-   [clojure.string :as str]
-   [hlt.entity :as e]
-   [hlt.math :as math]
-   [hlt.parser :as parser]
-   [clojure.edn :as edn]
-   [taoensso.timbre :as timbre]))
-
-(defn get-line
-  []
-  (edn/read-string (str \[ (read-line) \])))
-
-(defn read-prelude
-  []
-  (let [[player-id] (get-line)
-        map-size (get-line)]
-    {:player-id player-id
-     :map-size map-size}))
-
-(defn read-map
-  []
-  (parser/build-game-map (get-line)))
-
-;; ;; decoding game map
-;; (defn- to-docking-status
-;;   [docking-status]
-;;   (case docking-status
-;;     0 :undocked
-;;     1 :docking
-;;     2 :docked
-;;     3 :undocking))
-
-;; (defn- parse-ship
-;;   [stream owner-id]
-;;   (let [ship-id          (read stream)
-;;         x-loc            (read stream)
-;;         y-loc            (read stream)
-;;         health           (read stream)
-;;         x-velocity       (read stream) ;; velocity, which is deprecated
-;;         y-velocity       (read stream)
-;;         docking-status   (to-docking-status (read stream))
-;;         docked-planet    (read stream)
-;;         docking-progress (read stream)
-;;         weapon-cooldown  (read stream)] ;; weapon cooldown seems unused as well
-;;     (e/->Ship ship-id (math/->Position x-loc y-loc) health e/ship-radius owner-id
-;;               {:status docking-status
-;;                :planet docked-planet
-;;                :progress docking-progress})))
-
-;; (defn- parse-ship-list
-;;   [stream owner-id]
-;;   (let [num-ships (read stream)]
-;;     (loop [ships (transient {})
-;;            cur-ship 0]
-;;       (if (== num-ships cur-ship)
-;;         (persistent! ships)
-;;         (let [ship (parse-ship stream owner-id)]
-;;           (recur (assoc! ships (:id ship) ship)
-;;                  (inc cur-ship)))))))
-
-;; (defn- parse-all-ships
-;;   [stream]
-;;   (let [num-players (read stream)]
-;;      (loop [all-ships (transient {})
-;;             owner-ships {}
-;;             cur-player 0]
-;;        (if (== num-players cur-player)
-;;          {:owner-ships owner-ships
-;;           :ships (persistent! all-ships)}
-;;          (let [owner-id (read stream)
-;;                ships (parse-ship-list stream owner-id)]
-;;            (recur (reduce conj! all-ships ships)
-;;                   (assoc owner-ships owner-id ships)
-;;                   (inc cur-player)))))))
-
-;; (defn- parse-planet
-;;   [stream]
-;;   (let [id                   (read stream)
-;;         x-loc                (read stream)
-;;         y-loc                (read stream)
-;;         health               (read stream)
-;;         radius               (read stream)
-;;         docking-spots        (read stream)
-;;         current-production   (read stream) ;; Deprecated
-;;         remaining-production (read stream) ;;
-;;         has-owner            (read stream)
-;;         owner-candidate      (read stream)
-;;         docked-ship-count    (read stream)
-;;         docked-ships (vec (repeatedly docked-ship-count #(read stream)))]
-;;     (e/->Planet id (math/->Position x-loc y-loc) health radius
-;;                 (if (== has-owner 1)
-;;                   owner-candidate
-;;                   nil)
-;;                 {:spots docking-spots
-;;                  :ships docked-ships})))
-
-;; (defn- parse-all-planets
-;;   [stream]
-;;   (let [num-planets (read stream)]
-;;     (loop [planets (transient {})
-;;            cur-planet 0]
-;;       (if (== num-planets cur-planet)
-;;         (persistent! planets)
-;;         (let [planet (parse-planet stream)]
-;;           (recur (assoc! planets (:id planet) planet)
-;;                  (inc cur-planet)))))))
-
-#_(defn read-map
-  [{:keys [in]}]
-  (let [ships   (parse-all-ships in)
-        planets (parse-all-planets in)]
-    (assoc ships :planets planets)))
-
-;; finish initialization
-
-;; (defn send-done-initialized
-;;   "Notifies the game engine that this bot has been initialized."
-;;   [{:keys [out]} bot-name]
-;;   (doto out
-;;     (.write (str bot-name "\n"))
-;;     (.flush)))
-
-(defn send-done-initialized
-  "Notifies the game engine that this bot has been initialized."
-  [bot-name]
-  (println bot-name))
+  (:require [clojure.edn :as edn]
+            [clojure.string :as str]
+            [hlt.parser :as parser]
+            [taoensso.timbre :as timbre]))
 
 ;; encoding moves
 
@@ -142,6 +20,30 @@
 
 (defmethod move-segments :thrust [move]
   [thrust-key (-> move :ship :id) (:thrust move) (:angle move)])
+
+;; Reading input
+
+(defn get-line
+  []
+  (edn/read-string (str \[ (read-line) \])))
+
+(defn read-prelude
+  []
+  (let [[player-id] (get-line)
+        map-size (get-line)]
+    {:player-id player-id
+     :map-size map-size}))
+
+(defn read-map
+  []
+  (parser/build-game-map (get-line)))
+
+;; Sending commands
+
+(defn send-done-initialized
+  "Notifies the game engine that this bot has been initialized."
+  [bot-name]
+  (println bot-name))
 
 (defn send-moves
   "Sends the moves to the game engine."
