@@ -1,4 +1,4 @@
-(ns my-bot
+(ns bot-impl
   (:require [hlt.entity :as e]
             [hlt.navigation :as nav]
             [hlt.bot :as bot]))

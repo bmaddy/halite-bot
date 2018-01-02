@@ -1,8 +1,8 @@
-(ns system
+(ns MyBot
   (:gen-class)
   (:require [hlt.bot :as bot]
             [hlt.io :as io]
-            [my-bot :as my-bot]
+            bot-impl
             [taoensso.timbre :as timbre :refer [info]]
             [taoensso.timbre.appenders.core :as appenders]))
 
@@ -37,4 +37,4 @@
 (defn -main
   [& args]
   (timbre/log-errors
-    (start my-bot/bot)))
+    (start bot-impl/bot)))
