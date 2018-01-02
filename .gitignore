@@ -7,3 +7,7 @@ classes
 *.log
 *.zip
 .markdown-preview.html
+log
+.nrepl-port
+halite
+.lein-repl-history
