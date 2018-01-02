@@ -4,7 +4,7 @@
   :license {:name "All Rights Reserved"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [com.taoensso/timbre "4.10.0"]]
-  :main ^:skip-aot system
+  :main ^:skip-aot MyBot
   :target-path "target/"
   :uberjar-name "MyBot.jar"
   :profiles {:uberjar {:aot :all}})
