@@ -6,6 +6,8 @@
             [clojure.math.combinatorics :as combo]
             [taoensso.timbre :as timbre]))
 
+;; Original strategy
+
 (defn compute-move
   [ship state]
   (when (= (-> ship :docking :status) :undocked)
@@ -20,6 +22,9 @@
   [{:keys [player-id] :as state}]
   (let [ships (get-in state [:ships-by-player-id player-id])]
     (keep #(compute-move % state) ships)))
+
+;; Strategy: find all ship/planet distances and choose the smallest distances
+;; while going to as many planets as possible
 
 (defn all-distances
   "Returns all possible pairings of ships and planets."
@@ -67,9 +72,8 @@
                         (target-planet state ship planet))
                       plan))))
 
-;; get all ship/planet combinations for undocked ships
-;; min-by sum of the distance
-;; build the moves
+
+;; set up the bot
 
 (def bot
   (reify bot/IBot
